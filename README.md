@@ -1,207 +1,245 @@
 # AgentKit
 
-A CLI package manager for Claude AI agent skills.
+**A package manager for Claude AI skills.** Share and manage custom AI capabilities—without copy-paste.
 
-AgentKit lets you define, install, and manage AI agent skills using a manifest file (`agentkit.json`) similar to npm's `package.json`. Skills are downloaded from GitHub and automatically synced to `.claude/skills/` where Claude Code can use them.
+## The Problem
 
-## Installation
+Your team builds custom Claude skills: code reviewers, testing agents, documentation generators, etc. Right now, sharing these across projects is a mess:
+- 🔄 Copy-paste the same skill into multiple projects
+- 😅 Forget to update it everywhere
+- 🤔 New team members don't know which version to use
+- 🚨 Breaking changes break multiple projects at once
+
+## The Solution
+
+AgentKit is like **npm for Claude skills**. Define your skills once, share via GitHub, install anywhere.
+
+```bash
+# Team builds a code review skill
+agk add your-org/code-review
+
+# Everyone installs the same version
+agk install
+
+# Update one place, everyone gets the fix
+agk update
+```
+
+That's it. Lock files ensure reproducibility. Semantic versioning prevents breaking changes.
+
+## Why Use AgentKit
+
+| Problem | AgentKit Solution |
+|---------|-------------------|
+| Skills scattered across projects | Single source of truth on GitHub |
+| Manual version management | Semantic versioning + lock files |
+| No way to share skills with teammates | One command: `agk add org/repo` |
+| Uncertain what versions are used | Lock file pins exact versions |
+| Hard to update skills safely | Update once, control versions carefully |
+
+## Quick Start
+
+### 1. Install AgentKit
 
 ```bash
 npm install -g @fagom174/agentkit
 ```
 
-Or run directly:
+Or use directly:
 
 ```bash
 npx @fagom174/agentkit <command>
 ```
 
-## Quick Start
-
-### 1. Initialize a project
+### 2. Initialize your project
 
 ```bash
-agk init
+agk init -y
 ```
 
-This creates an `agentkit.json` file with your project name and version.
+Creates an `agentkit.json`:
+```json
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "skills": {}
+}
+```
 
-### 2. Add a skill
+### 3. Add a skill
 
 ```bash
-agk add org/repo
+agk add your-org/code-review
+agk add your-org/testing-agent
 ```
 
-This resolves the skill's latest version, downloads it from GitHub, and updates `agentkit.json` and `agentkit-lock.json`.
+AgentKit downloads the skills and creates `agentkit-lock.json` with exact versions.
 
-For multi-skill repositories, specify which skill to install:
+### 4. Share with your team
 
-```bash
-agk add org/repo --skill foo
-```
-
-This installs the skill from `org/repo/skills/foo`.
-
-### 3. Install all skills
+Commit both files. Team members run:
 
 ```bash
 agk install
 ```
 
-Installs all skills from the manifest and ensures `.claude/skills/` is in sync.
+Everyone gets the exact same versions in `.claude/skills/`. 🎉
 
-### 4. List skills
+## Real Example
+
+Your team's code review skill lives at `github.com/your-org/code-review`:
 
 ```bash
-agk list
+# You: Build and publish the skill
+git push your-org/code-review
+
+# Teammate: Install in seconds
+agk add your-org/code-review
+
+# New team member: Get everything set up
+agk install
 ```
 
-Shows installed skills, their requested versions, and actual installed versions.
+No documentation needed. Everyone's in sync with Claude Code.
 
-## Commands
+## Commands Reference
 
-### `agk init [--yes]`
+```bash
+agk init                           # Start a new project
+agk add <org/repo>                 # Add a skill
+agk add <org/repo> --skill <name>  # Add from multi-skill repo
+agk install                        # Install all skills
+agk update                         # Update to latest versions
+agk remove <org/repo>              # Remove a skill
+agk list                           # Show installed skills
+agk clean                          # Refresh cache
+```
 
-Initialize a new `agentkit.json` in the current directory.
+## How It Works
 
-- `--yes` — skip prompts and use defaults
-
-### `agk add <scope/repo> [--skill <name>]`
-
-Add a skill to the manifest and install it immediately.
-
-- `--skill <name>` — install a specific sub-skill from a multi-skill repository (automatically looks in the `skills/` subdirectory)
-
-### `agk install [--frozen-lockfile]`
-
-Install all skills from `agentkit.json` based on version ranges.
-
-- `--frozen-lockfile` — fail if the lock file would change (useful in CI)
-
-### `agk remove <scope/repo>`
-
-Remove a skill from the manifest, lock file, and installed directories.
-
-### `agk update`
-
-Re-resolve all skills to their latest compatible versions.
-
-### `agk list`
-
-Display all skills in the manifest with their version ranges and installed versions.
-
-### `agk clean`
-
-Delete the internal cache (`.agentkit/skills/`) and reinstall all skills from the lock file.
-
-## Files
-
-### `agentkit.json`
-
-Manifest file defining your project and its skill dependencies.
-
+**agentkit.json** — Your manifest (like package.json)
 ```json
 {
-  "name": "my-agent-project",
-  "version": "1.0.0",
+  "name": "my-project",
   "skills": {
-    "anthropics/web-search": "*",
-    "org/monorepo/skills/code-review": "^1.0.0"
+    "your-org/code-review": "^1.2.0",
+    "your-org/testing-agent": "^2.0.0"
   }
 }
 ```
 
-### `agentkit-lock.json`
-
-Lock file storing exact resolved versions for reproducible installs.
-
+**agentkit-lock.json** — Exact versions (like package-lock.json)
 ```json
 {
-  "lockfileVersion": 1,
   "skills": {
-    "anthropics/web-search": {
-      "version": "1.0.2",
-      "resolved": "github:anthropics/web-search#v1.0.2"
-    },
-    "org/monorepo/skills/code-review": {
-      "version": "1.2.0",
-      "resolved": "github:org/monorepo#main",
-      "subdir": "skills/code-review"
+    "your-org/code-review": {
+      "version": "1.2.3",
+      "resolved": "github:your-org/code-review#v1.2.3"
     }
   }
 }
 ```
 
-### `.agentkit/`
+Skills are synced to `.claude/skills/` where Claude Code automatically discovers them.
 
-Internal cache directory where skill repositories are downloaded and extracted. Automatically created and managed by AgentKit. Add to `.gitignore`.
+## Publishing Your Own Skill
 
-### `.claude/skills/`
-
-Directory where skills are synced for Claude Code to access. Claude Code reads skill prompts and tools from here.
+Create a GitHub repo with your skill:
 
 ```
-.claude/skills/
-├── web-search/
-│   └── (skill files)
-└── code-review/
-    └── (skill files)
-```
-
-## Skill Repository Format
-
-Skills are hosted on GitHub and can be in two formats:
-
-### Single-skill repository
-
-A simple repository containing a single skill. AgentKit will sync all files to `.claude/skills/{skillName}`.
-
-```
-repository/
+my-code-review-skill/
 ├── README.md
-├── SKILL.md        (skill definition/prompt)
-└── tools.js        (optional: additional tools)
+├── SKILL.md          (skill prompt/definition)
+└── tools.js          (optional: tools for the skill)
+```
+
+Push to GitHub. Done. Others can install with:
+
+```bash
+agk add your-org/my-code-review-skill
 ```
 
 ### Multi-skill repository
 
-A repository containing multiple skills in subdirectories. Install specific skills using the `--skill` flag.
+If you have multiple skills in one repo:
 
 ```
-repository/
+my-skills/
 ├── skills/
-│   ├── web-search/
-│   │   └── SKILL.md
-│   └── code-review/
+│   ├── code-review/
+│   │   ├── SKILL.md
+│   │   └── tools.js
+│   └── testing-agent/
 │       └── SKILL.md
 └── README.md
 ```
 
-To install a skill from this repo:
+Install specific skills:
 
 ```bash
-agk add org/repo --skill web-search
+agk add your-org/my-skills --skill code-review
+agk add your-org/my-skills --skill testing-agent
 ```
 
-## Version Ranges
+## Version Management
 
-AgentKit supports semver version ranges:
+AgentKit uses semantic versioning:
 
-- `1.0.0` — exact version
-- `^1.0.0` — compatible with version 1.0.0 (up to <2.0.0)
-- `~1.0.0` — approximately version 1.0.0 (up to <1.1.0)
-- `*` — any version (used by `agk add` when not specified)
+```json
+{
+  "skills": {
+    "org/skill": "^1.0.0",  // Allow 1.x.x, not 2.x.x
+    "org/skill": "~1.2.0",  // Allow 1.2.x, not 1.3.x
+    "org/skill": "1.0.0",   // Exact version only
+    "org/skill": "*"        // Any version
+  }
+}
+```
 
-## Environment Variables
+Update safely:
 
-- `GITHUB_TOKEN` — GitHub personal access token for higher rate limits (optional)
+```bash
+agk update              # Updates to latest compatible versions
+agk install             # Installs exactly what's in lock file
+```
+
+## GitHub Rate Limits
+
+By default, AgentKit uses GitHub's public API (60 requests/hour per IP).
+
+For higher limits, set a personal access token:
 
 ```bash
 export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
 agk add org/repo
 ```
 
-Without a token, GitHub allows 60 requests per hour per IP address.
+## Skill Repository Format
+
+### Single-skill repository
+
+A simple repository containing one skill:
+
+```
+my-skill/
+├── README.md
+├── SKILL.md        (skill definition/prompt)
+└── tools.js        (optional: tool definitions)
+```
+
+### Multi-skill repository
+
+A repository with multiple skills in subdirectories:
+
+```
+my-skills/
+├── skills/
+│   ├── skill-1/
+│   │   └── SKILL.md
+│   └── skill-2/
+│       └── SKILL.md
+└── README.md
+```
 
 ## License
 
