@@ -2,7 +2,7 @@
 
 A CLI package manager for Claude AI agent skills.
 
-AgentKit lets you define, install, and manage AI agent skills using a manifest file (`agk.json`) similar to npm's `package.json`. Skills are downloaded from GitHub and automatically synced to `.claude/skills/` where Claude Code can use them.
+AgentKit lets you define, install, and manage AI agent skills using a manifest file (`agentkit.json`) similar to npm's `package.json`. Skills are downloaded from GitHub and automatically synced to `.claude/skills/` where Claude Code can use them.
 
 ## Installation
 
@@ -24,15 +24,23 @@ npx agentkit <command>
 agk init
 ```
 
-This creates an `agk.json` file with your project name and version.
+This creates an `agentkit.json` file with your project name and version.
 
 ### 2. Add a skill
 
 ```bash
-agk add @anthropics/web-search
+agk add org/repo
 ```
 
-This resolves the skill's latest version, downloads it, and updates `agk.json` and `agk-lock.json`.
+This resolves the skill's latest version, downloads it from GitHub, and updates `agentkit.json` and `agentkit-lock.json`.
+
+For multi-skill repositories, specify which skill to install:
+
+```bash
+agk add org/repo --skill foo
+```
+
+This installs the skill from `org/repo/skills/foo`.
 
 ### 3. Install all skills
 
@@ -54,32 +62,29 @@ Shows installed skills, their requested versions, and actual installed versions.
 
 ### `agk init [--yes]`
 
-Initialize a new `agk.json` in the current directory.
+Initialize a new `agentkit.json` in the current directory.
 
 - `--yes` — skip prompts and use defaults
 
-### `agk add <@scope/skill> [--symlink]`
+### `agk add <scope/repo> [--skill <name>]`
 
 Add a skill to the manifest and install it immediately.
 
-- `--symlink` — use symbolic links instead of copying files
+- `--skill <name>` — install a specific sub-skill from a multi-skill repository (automatically looks in the `skills/` subdirectory)
 
-### `agk install [--frozen-lockfile] [--symlink]`
+### `agk install [--frozen-lockfile]`
 
-Install all skills from `agk.json` based on version ranges.
+Install all skills from `agentkit.json` based on version ranges.
 
 - `--frozen-lockfile` — fail if the lock file would change (useful in CI)
-- `--symlink` — use symbolic links instead of copying
 
-### `agk remove <@scope/skill>`
+### `agk remove <scope/repo>`
 
 Remove a skill from the manifest, lock file, and installed directories.
 
-### `agk update [--symlink]`
+### `agk update`
 
 Re-resolve all skills to their latest compatible versions.
-
-- `--symlink` — use symbolic links instead of copying
 
 ### `agk list`
 
@@ -91,7 +96,7 @@ Delete the internal cache (`.agentkit/skills/`) and reinstall all skills from th
 
 ## Files
 
-### `agk.json`
+### `agentkit.json`
 
 Manifest file defining your project and its skill dependencies.
 
@@ -100,13 +105,13 @@ Manifest file defining your project and its skill dependencies.
   "name": "my-agent-project",
   "version": "1.0.0",
   "skills": {
-    "@anthropics/web-search": "^1.0.0",
-    "@dev/code-review": "^2.1.0"
+    "anthropics/web-search": "*",
+    "org/monorepo/skills/code-review": "^1.0.0"
   }
 }
 ```
 
-### `agk-lock.json`
+### `agentkit-lock.json`
 
 Lock file storing exact resolved versions for reproducible installs.
 
@@ -114,9 +119,14 @@ Lock file storing exact resolved versions for reproducible installs.
 {
   "lockfileVersion": 1,
   "skills": {
-    "@anthropics/web-search": {
+    "anthropics/web-search": {
       "version": "1.0.2",
       "resolved": "github:anthropics/web-search#v1.0.2"
+    },
+    "org/monorepo/skills/code-review": {
+      "version": "1.2.0",
+      "resolved": "github:org/monorepo#main",
+      "subdir": "skills/code-review"
     }
   }
 }
@@ -124,39 +134,54 @@ Lock file storing exact resolved versions for reproducible installs.
 
 ### `.agentkit/`
 
-Internal cache directory where full skill repositories are extracted. Gitignore this directory.
+Internal cache directory where skill repositories are downloaded and extracted. Automatically created and managed by AgentKit. Add to `.gitignore`.
 
 ### `.claude/skills/`
 
-Directory where skill prompt files are synced. Claude Code reads from here.
+Directory where skills are synced for Claude Code to access. Claude Code reads skill prompts and tools from here.
 
 ```
 .claude/skills/
 ├── web-search/
-│   ├── SKILL.md         (the main skill prompt)
-│   └── tools.js         (optional additional files)
+│   └── (skill files)
 └── code-review/
-    └── SKILL.md
+    └── (skill files)
 ```
 
 ## Skill Repository Format
 
-Each skill on GitHub must have an `agk.skill.json` manifest:
+Skills are hosted on GitHub and can be in two formats:
 
-```json
-{
-  "name": "@anthropics/web-search",
-  "version": "1.0.0",
-  "entry": "SKILL.md",
-  "tools": ["tools.js"],
-  "description": "Web search skill for Claude"
-}
+### Single-skill repository
+
+A simple repository containing a single skill. AgentKit will sync all files to `.claude/skills/{skillName}`.
+
+```
+repository/
+├── README.md
+├── SKILL.md        (skill definition/prompt)
+└── tools.js        (optional: additional tools)
 ```
 
-The repository should contain:
-- `agk.skill.json` — skill metadata (required)
-- `SKILL.md` — the main skill prompt (required, referenced by `entry`)
-- Any additional files listed in `tools` (optional)
+### Multi-skill repository
+
+A repository containing multiple skills in subdirectories. Install specific skills using the `--skill` flag.
+
+```
+repository/
+├── skills/
+│   ├── web-search/
+│   │   └── SKILL.md
+│   └── code-review/
+│       └── SKILL.md
+└── README.md
+```
+
+To install a skill from this repo:
+
+```bash
+agk add org/repo --skill web-search
+```
 
 ## Version Ranges
 
@@ -173,7 +198,7 @@ AgentKit supports semver version ranges:
 
 ```bash
 export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
-agk add @scope/skill
+agk add org/repo
 ```
 
 Without a token, GitHub allows 60 requests per hour per IP address.
