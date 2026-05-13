@@ -7,13 +7,13 @@ AgentKit lets you define, install, and manage AI agent skills using a manifest f
 ## Installation
 
 ```bash
-npm install -g agentkit
+npm install -g @fagom174/agentkit
 ```
 
 Or run directly:
 
 ```bash
-npx agentkit <command>
+npx @fagom174/agentkit <command>
 ```
 
 ## Quick Start
