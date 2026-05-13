@@ -1,4 +1,4 @@
-name: Deploy Docs
+name: Deploy Docusaurus
 
 on:
   push:
@@ -6,37 +6,43 @@ on:
       - main
     paths:
       - 'docs/**'
-      - 'mkdocs.yml'
-      - '.github/workflows/deploy-docs.yml'
+      - 'docusaurus.config.js'
+      - 'sidebars.js'
+      - 'package.json'
+      - '.github/workflows/deploy-docusaurus.yml'
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          node-version: '18'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: npm ci
 
       - name: Build documentation
-        run: mkdocs build
+        run: npm run docs:build
 
-      - name: Upload to GitHub Pages
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: build
 
   deploy:
     environment:
