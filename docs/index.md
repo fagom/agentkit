@@ -1,57 +1,79 @@
 # AgentKit
 
-A CLI package manager for Claude AI agent skills.
+**A CLI package manager for Claude AI agent skills**
 
-AgentKit lets you define, install, and manage AI agent skills using a manifest file (`agentkit.json`) similar to npm's `package.json`. Skills are downloaded from GitHub and automatically synced to `.claude/skills/` where Claude Code can use them.
+AgentKit lets you install and manage AI agent skills from GitHub with a simple manifest file—similar to npm for Node.js.
 
-## Quick Links
+## Features
 
-- **[Installation](./installation.md)** - Get started
-- **[Usage Guide](./usage.md)** - Learn the commands
-- **[Skill Repository Format](./skill-format.md)** - Create your own skills
-- **[Configuration](./configuration.md)** - Environment variables and options
+- **📦 Easy Installation** - Install skills from GitHub with a single command
+- **🔄 Automatic Syncing** - Skills are synced to `.claude/skills/` for Claude Code
+- **📝 Lock Files** - Reproducible installs with `agentkit-lock.json`
+- **🔗 Multi-skill Repos** - Support both single and multi-skill repositories
+- **⚡ Version Management** - Semantic versioning for skills
 
-## What is AgentKit?
-
-AgentKit simplifies managing Claude AI agent skills by providing a centralized package manager. Instead of manually managing skill files across projects, AgentKit:
-
-- ✨ Installs skills from GitHub repositories
-- 🔄 Keeps skills synced to `.claude/skills/`
-- 📦 Manages versions with lock files for reproducibility
-- 🔗 Supports both single-skill and multi-skill repositories
-
-## Installation
+## Quick Start
 
 ```bash
+# Install AgentKit
 npm install -g @fagom174/agentkit
-agk --help
-```
 
-## Example
-
-```bash
-# Initialize a project
+# Initialize your project
 agk init
 
 # Add a skill
-agk add org/repo --skill myskill
+agk add owner/repo
 
 # Install all skills
 agk install
 
-# List installed skills
+# See what's installed
 agk list
 ```
 
 ## Why AgentKit?
 
-Managing skills manually is tedious and error-prone. AgentKit provides:
+Managing Claude AI skills manually is error-prone. AgentKit provides:
 
-- **Reproducibility** — Lock files ensure exact versions across machines
-- **Simplicity** — One command to manage all your skills
-- **Flexibility** — Support for both single and multi-skill repositories
-- **Version Control** — Semver support for skill versions
+| Feature | Benefit |
+|---------|---------|
+| Manifest file | Define all your skills in one place |
+| Lock files | Ensure exact versions across machines |
+| Version ranges | Use semver for flexible version management |
+| Multi-skill repos | Install specific skills from monorepos |
 
-## Community
+## Next Steps
 
-Found an issue? Have a feature request? Visit the [GitHub repository](https://github.com/fagom/agentkit).
+- **New to AgentKit?** → [Installation Guide](installation.md)
+- **Ready to use it?** → [Quick Start](usage.md)
+- **Want more details?** → [Commands Reference](commands.md)
+- **Creating skills?** → [Skill Format](skill-format.md)
+
+## Example Workflow
+
+=== "Single-skill repo"
+    ```bash
+    # Install a single skill
+    agk add anthropic/web-search
+    agk install
+    ```
+
+=== "Multi-skill repo"
+    ```bash
+    # Install from a monorepo
+    agk add myorg/tools --skill code-review
+    agk install
+    ```
+
+=== "Pin versions"
+    ```bash
+    # Pin to specific versions
+    agk add myorg/skill@1.2.3
+    agk install --frozen-lockfile
+    ```
+
+## Need Help?
+
+- 📚 Check the [documentation](./installation.md)
+- 🐛 Report issues on [GitHub](https://github.com/fagom/agentkit/issues)
+- 💬 Have questions? Open a [discussion](https://github.com/fagom/agentkit/discussions)

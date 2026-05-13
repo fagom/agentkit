@@ -1,0 +1,65 @@
+site_name: AgentKit
+site_description: A CLI package manager for Claude AI agent skills
+repo_url: https://github.com/fagom/agentkit
+repo_name: fagom/agentkit
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: usage.md
+  - Documentation:
+    - Usage Guide: usage.md
+    - Commands Reference: commands.md
+    - Configuration: configuration.md
+  - Creating Skills:
+    - Skill Format: skill-format.md
+  - About:
+    - License: license.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.details
+  - pymdownx.tasklist
+  - tables
+  - md_in_html
