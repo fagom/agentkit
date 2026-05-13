@@ -1,5 +1,5 @@
 {
-  "name": "agentkit",
+  "name": "@fagom/agentkit",
   "version": "0.1.1",
   "description": "CLI package manager for Claude AI agent skills",
   "type": "module",
