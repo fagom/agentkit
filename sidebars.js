@@ -16,6 +16,7 @@ const sidebars = {
   tutorialSidebar: [
     'intro',
     {
+      type: 'category',
       label: 'Getting Started',
       items: [
         'installation',
@@ -23,6 +24,7 @@ const sidebars = {
       ],
     },
     {
+      type: 'category',
       label: 'Documentation',
       items: [
         'commands',
@@ -31,6 +33,7 @@ const sidebars = {
       ],
     },
     {
+      type: 'category',
       label: 'Creating Skills',
       items: [
         'skill-format',
